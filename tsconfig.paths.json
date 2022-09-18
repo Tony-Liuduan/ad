@@ -7,8 +7,7 @@
             "@src/*": ["src/*"],
             "@ui/*": ["packages/ui/*"],
             "@lib/*": ["lib/*"],
-            "@styles/*": ["styles/*"],
-            "@open-api/*": ["open-api/*"]
+            "@styles/*": ["styles/*"]
         }
     }
 }
