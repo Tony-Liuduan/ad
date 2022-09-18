@@ -16,7 +16,7 @@ yarn install
 
 ```sh
 # 使用 dev 环境启动
-make dev
+npm run dev
 ```
 
 > <http://localhost:3000/>
