@@ -1,0 +1,31 @@
+1. web 页搭建
+    1.1 UI 部分
+        * 下载按钮 button
+        * 视频播放 video
+    1.2 js 部分
+        * 埋点 sdk
+            * 埋点类 class tracker
+                * 手动触发埋点
+            * request use sendBeacon & XMLHttpRequest （post 请求）
+        * 用户进入页面时打点 （埋点 sdk 加载则立即执行）
+        * 监听用户离开页面时打点 （beforeunload、pagehide)
+        * 可点击按钮埋点
+        * 视频播放时打点
+            * 监听视频点击切换播放、暂停状态
+            * 监听视频 play 事件，打点视频 play 开始播放埋点 （视频总时长，视频 id）
+            * 监听视频 pause 事件，打点视频 pause 暂停播放埋点
+    1.3 Twitter 验证用户转/评/赞/关注 TODO
+
+2. node server
+    * 服务基础搭建
+    * middleware - error catch
+    * middleware - 支持 static 文件渲染
+    * middleware - 路由 api 接口
+        * post 埋点接口接受请求
+            * 下载埋点，计算一个用户评分，next 走用户评分上报
+            * 当请求为页面进入埋点时，map 缓存用户 entry 时间，停止 next
+            * 当请求为视频播放埋点时，map 缓存用户 视频 paly、pause 时间 列表，停止 next
+            * 当请求为页面离开埋点时
+                * 从 map 中取 entry 时间，做差值得到用户访问页面时长，计算一个用户评分，next 走用户评分上报
+                * 从 map 中取 视频 paly、pause 时间点列表，得到用户视频播放时长 && 视频总时长，计算一个用户评分，next 走用户评分上报
+    * middleware - 根据埋点数据上报用户评分（现有逻辑 done）
