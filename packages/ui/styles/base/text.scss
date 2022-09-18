@@ -1,0 +1,22 @@
+.bold {
+    font-weight: bold;
+}
+
+// 单行文本打点...
+.text-overflow {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+// 多行文本打点...
+@mixin multi-line-text-overflow($lines, $line-height: 20px, $max-height: $line-height * $lines) {
+    display: -webkit-box;
+    /* autoprefixer: ignore next */
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: $lines;
+    line-height: $line-height;
+    max-height: $max-height;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}

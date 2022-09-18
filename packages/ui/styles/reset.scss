@@ -1,0 +1,112 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+*,
+*::after,
+*::before {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+    // https://www.jianshu.com/p/9fad261dd3e1
+    -webkit-text-size-adjust: 100%;
+    /* 平滑像素级别的字体 */
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+}
+
+body {
+    padding-bottom: constant(safe-area-inset-bottom);
+    padding-bottom: env(safe-area-inset-bottom);
+    /* 当手指从触摸屏上移开，会保持一段时间的滚动 */
+    -webkit-overflow-scrolling: touch;
+}
+
+html,
+body,
+a,
+button {
+    // https://developer.mozilla.org/zh-CN/docs/Web/CSS/touch-action
+    -webkit-touch-action: manipulation;
+    touch-action: manipulation;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-weight: normal;
+    color: $common-color-dark;
+}
+h1 {
+    font-size: 24px;
+    @extend .bold;
+}
+h2 {
+    font-size: 18px;
+    @extend .bold;
+}
+h3 {
+    font-size: 16px;
+    @extend .bold;
+}
+h4 {
+    font-size: 15px;
+}
+h4 {
+    font-size: 14px;
+}
+h6 {
+    font-size: 12px;
+}
+
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+ul,
+ol {
+    list-style: none;
+}
+
+em,
+i,
+address {
+    font-style: normal;
+}
+
+img {
+    border: none;
+    vertical-align: top;
+}
+
+input,
+textarea,
+select {
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+}
+
+a {
+    text-decoration: none;
+    color: $common-color-gray;
+    -webkit-tap-highlight-color: rgba(255, 255, 255, 0.5);
+}
+
+button {
+    outline: none;
+    border: 0;
+    background-color: transparent;
+    text-align: center;
+    &:disabled {
+        color: $common-color-gray-light;
+    }
+}

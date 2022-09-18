@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "baseUrl": ".", // This must be specified if "paths" is.
+        "paths": {
+            // "paths"是相对于"baseUrl"进行解析
+            "@app/*": ["app/*"],
+            "@src/*": ["src/*"],
+            "@ui/*": ["packages/ui/*"],
+            "@lib/*": ["lib/*"],
+            "@styles/*": ["styles/*"],
+            "@open-api/*": ["open-api/*"]
+        }
+    }
+}

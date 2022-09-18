@@ -1,0 +1,32 @@
+{
+    "compilerOptions": {
+        "allowJs": false,
+        "allowSyntheticDefaultImports": true,
+        "alwaysStrict": true, // 以严格模式解析并为每个源文件生成 "use strict"语句
+        "esModuleInterop": true,
+        "experimentalDecorators": true, // 启用实验性的ES装饰器
+        "forceConsistentCasingInFileNames": true, // 禁止对同一个文件的不一致的引用
+        "incremental": true, // 加快后续构建
+        "isolatedModules": true, // 将每个文件作为单独的模块
+        "jsx": "preserve",
+        "lib": ["DOM", "DOM.Iterable", "ESNext"], // 指定当前项目需要注入哪些声明库文件,  DOM.Iterable 使 for of 遍历 map 数据 可用
+        "module": "ESNext", // 指定生成哪个模块系统代码
+        "moduleResolution": "Node", // 指定查找模块方式
+        "noEmit": true,
+        "noImplicitAny": true, // 禁止隐式 any
+        "noUnusedLocals": true, // 若有未使用的局部变量则抛错
+        "noUnusedParameters": true, // 若有未使用的参数则抛错
+        "preserveConstEnums": true, // 保留 const 声明的 enum 枚举，增加代码可读性，http://www.tastones.com/stackoverflow/typescript/tsconfig.json/preserveconstenums/
+        "resolveJsonModule": true,
+        "skipLibCheck": true, // 忽略所有的声明文件（ *.d.ts）的类型检查
+        "strict": true,
+        "strictFunctionTypes": true,
+        "strictPropertyInitialization": true, // 确保类的非undefined属性已经在构造函数里初始化
+        "strictNullChecks": true, // 在严格的 null检查模式下， null和 undefined值不包含在任何类型里
+        "target": "ES5", // 编译后的版本
+        "downlevelIteration": true // Use compiler option ‘--downlevelIteration‘ to allow iterating of iterators 报错解决
+    },
+    "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
+    "exclude": ["node_modules", "scripts"],
+    "extends": "./tsconfig.paths.json"
+}

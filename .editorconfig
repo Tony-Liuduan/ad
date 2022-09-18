@@ -1,0 +1,30 @@
+# Editor configuration, see https://editorconfig.org
+# 覆盖 IDE 或编辑器的配置, EditorConfig 的作用是配置你的编辑器，以便你所编写的代码已经是格式良好的了
+# https://vivaxyblog.github.io/2015/12/29/use-editor-config-file-to-unify-code-style.html
+root = true
+
+[*]
+charset = utf-8
+indent_style = space
+indent_size = 4
+max_line_length = 120
+trim_trailing_whitespace = true     # 不保留行末的空格
+insert_final_newline = true         # 文件末尾添加一个空行
+spaces_around_operators = true      # 运算符两遍都有空格
+quote_type = single
+indent_brace_style = 1tbs
+end_of_line = lf                    # 文件换行符是 linux 的 `\n`
+
+[*.{html,less,scss,css,json}]       # 对所有 html, less, css, json 文件生效
+quote_type = double                 # 字符串使用双引号
+
+[package.json]                      # 对 package.json 生效
+indent_size = 2                     # 使用2个空格缩进
+
+[*.md]
+max_line_length = off
+trim_trailing_whitespace = false
+
+[Makefile]
+indent_style = tab
+insert_final_newline = false

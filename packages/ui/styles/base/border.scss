@@ -1,0 +1,81 @@
+.px-border {
+    border: 1px solid $common-color-border;
+}
+
+.px-border-top {
+    border-top: 1px solid $common-color-border;
+}
+
+.px-border-right {
+    border-right: 1px solid $common-color-border;
+}
+
+.px-border-bottom {
+    border-bottom: 1px solid $common-color-border;
+}
+
+.px-border-left {
+    border-left: 1px solid $common-color-border;
+}
+
+.px-border-horizontal {
+    border-top: 1px solid $common-color-border;
+    border-bottom: 1px solid $common-color-border;
+}
+
+.px-border-vertical {
+    border-left: 1px solid $common-color-border;
+    border-right: 1px solid $common-color-border;
+}
+
+/**
+  * 模拟真实的物理1px
+  * 由于模拟过程中,占用了:after伪类
+  * 所以在使用过程中请务必小心再小心
+*/
+@media (-webkit-min-device-pixel-ratio: 2) {
+    .px-border,
+    .px-border-top,
+    .px-border-right,
+    .px-border-bottom,
+    .px-border-left,
+    .px-border-horizontal,
+    .px-border-vertical {
+        position: relative;
+        border-width: 0;
+        &:after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 200%;
+            height: 200%;
+            transform-origin: 0 0;
+            transform: scale(0.5);
+            pointer-events: none;
+        }
+    }
+    .px-border:after {
+        border: 1px solid $common-color-border;
+    }
+    .px-border-top:after {
+        border-top: 1px solid $common-color-border;
+    }
+    .px-border-right:after {
+        border-right: 1px solid $common-color-border;
+    }
+    .px-border-bottom:after {
+        border-bottom: 1px solid $common-color-border;
+    }
+    .px-border-left:after {
+        border-left: 1px solid $common-color-border;
+    }
+    .px-border-horizontal:after {
+        border-top: 1px solid $common-color-border;
+        border-bottom: 1px solid $common-color-border;
+    }
+    .px-border-vertical:after {
+        border-left: 1px solid $common-color-border;
+        border-right: 1px solid $common-color-border;
+    }
+}
