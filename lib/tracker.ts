@@ -61,16 +61,18 @@ function sendByXMLHttpRequest(url: string, data: any): Promise<void> {
  *
  * 优先使用 sendBeacon 发送，不支持或者失败使用 xml 发送
  */
-export function tracker(eventValue: string) {
+export function tracker(eventValue: string, extra?: Record<string, any>): Promise<void> {
     if (!isClient) {
         return Promise.resolve();
     }
     const url = '/api/trace';
+    console.log(extra);
     const data = {
         pathname: location.pathname,
         event: eventValue,
         timestamp: new Date().getTime(),
-        ...qs.parse(location.search.slice(1))
+        searchParams: qs.parse(location.search.slice(1)),
+        extra
     };
     return sendByBeacon(url, data).catch(() => sendByXMLHttpRequest(url, data));
 }
@@ -81,7 +83,7 @@ export function tracker(eventValue: string) {
     }
     /**
      * 初始化监听页面点击事件，识别 html 标签 data-tracker 属性，发送 click 打点
-     * 示例：<button data-tracker="EventValue">xxx</button>
+     * 示例：<button data-trace="EventValue">xxx</button>
      */
     window.addEventListener(
         'click',
@@ -91,7 +93,7 @@ export function tracker(eventValue: string) {
                 if (node.nodeName === 'BODY') {
                     return;
                 }
-                const eventValue = (node as { dataset?: { tracker?: string } })?.dataset?.tracker;
+                const eventValue = (node as { dataset?: { trace?: string } })?.dataset?.trace;
                 if (eventValue) {
                     tracker(eventValue);
                     return;
