@@ -59,9 +59,7 @@ export default nextRouter
         }
         await next();
     })
-    .post(async (req, res, next) => {
-        res.status(200);
-        res.end();
+    .post(async (req, res) => {
         const body = JSON.parse(req.body);
         nextLogger.trace(req, body);
         switch (body.event) {
@@ -81,7 +79,8 @@ export default nextRouter
                 handleVideoPauseTrace(body);
                 break;
         }
-        next();
+        res.status(200);
+        res.end();
     })
     .handler(nextRouterHandleConfig);
 
