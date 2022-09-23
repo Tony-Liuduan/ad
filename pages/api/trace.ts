@@ -1,14 +1,19 @@
 import { nextRouterHandleConfig } from '@app/middlewares/error';
 import { logger, nextLogger } from '@app/utils/logger';
 import { nextRouter } from '@app/utils/next-router';
+import { http } from '@lib/http.server';
+import { ApiPromise, Keyring, WsProvider } from '@polkadot/api';
+import { hexToU8a, stringToU8a, u8aToHex } from '@polkadot/util';
+import { keccak256AsU8a } from '@polkadot/util-crypto';
 import findLastIndex from 'lodash/findLastIndex';
 import groupBy from 'lodash/groupBy';
+import * as $ from 'parity-scale-codec';
 
 interface TraceEvent {
     event: string;
     pathname: string;
     timestamp: number;
-    userId: string;
+    searchParams: Record<string, any>;
     extra?: Record<string, any>;
     isDone?: boolean; // 是否已评分
 }
@@ -28,12 +33,12 @@ enum SCORE_TYPE {
 }
 
 // 定义满分满分
-const FULL_SCORE = 10;
+const FULL_SCORE = 5;
 // 定义点击下载按钮评分
-const DOWNDLOAD_APP_SCORE = 10;
-// 定义浏览页面满分时长
+const DOWNDLOAD_APP_SCORE = 5;
+// 定义浏览页面满分时长 s
 const FULL_SCORE_PAGE_VIEW_DURATION = 10;
-// 定义浏览视频满分时长
+// 定义浏览视频满分时长 s
 const FULL_SCORE_VIDEO_VIEW_DURATION = 10;
 
 // FIXME: db 人数太多了内存不够用怎么办
@@ -46,7 +51,7 @@ export default nextRouter
         const referer = req.headers.referer;
         const { hostname, pathname } = new URL(referer || '');
         const body = JSON.parse(req.body);
-        if (hostname !== process.env.HOSTNAME || pathname !== body.pathname || !body.userId) {
+        if (hostname !== process.env.HOSTNAME || pathname !== body.pathname || !body.searchParams?.userId) {
             // 请求非法
             res.status(403);
             res.end();
@@ -54,10 +59,11 @@ export default nextRouter
         }
         await next();
     })
-    .post(async (req, res) => {
+    .post(async (req, res, next) => {
         res.status(200);
         res.end();
         const body = JSON.parse(req.body);
+        nextLogger.trace(req, body);
         switch (body.event) {
             case TRACE_EVENT_TYPE.PAGE_VEIVE:
                 handlePageViewTrace(body);
@@ -75,7 +81,7 @@ export default nextRouter
                 handleVideoPauseTrace(body);
                 break;
         }
-        nextLogger.trace(req, body);
+        next();
     })
     .handler(nextRouterHandleConfig);
 
@@ -84,7 +90,7 @@ export default nextRouter
  * 已用户维度记录用户进入页面时间
  */
 async function handlePageViewTrace(traceEvent: TraceEvent) {
-    const { userId } = traceEvent;
+    const { userId } = traceEvent.searchParams;
     const traces = db.get(userId);
     // 记录新值
     db.delete(userId);
@@ -99,7 +105,8 @@ async function handlePageViewTrace(traceEvent: TraceEvent) {
  * @description: 用户离开页面打点
  */
 async function handlePageCloseTrace(traceEvent: TraceEvent) {
-    const { userId, pathname } = traceEvent;
+    const { pathname } = traceEvent;
+    const { userId } = traceEvent.searchParams;
     // 如果无历史进入记录则放弃本次打点
     if (!validTraces(userId, pathname)) {
         db.delete(userId);
@@ -116,21 +123,23 @@ async function handlePageCloseTrace(traceEvent: TraceEvent) {
  * @description: 点击下载 APP事件打点处理
  */
 async function handleClickDownloadTrace(traceEvent: TraceEvent) {
-    const { userId, pathname } = traceEvent;
+    const { pathname } = traceEvent;
+    const { userId } = traceEvent.searchParams;
     // 如果无历史进入记录则放弃本次打点
     if (!validTraces(userId, pathname)) {
         db.delete(userId);
         return;
     }
     // 不记录到 db，直接请求打分
-    sendUserScore(userId, SCORE_TYPE.DOWNLOAD_APP, DOWNDLOAD_APP_SCORE);
+    sendUserScore(userId, SCORE_TYPE.DOWNLOAD_APP, DOWNDLOAD_APP_SCORE, traceEvent.searchParams);
 }
 
 /**
  * @description: 用户播放视频打点
  */
 async function handleVideoPalyTrace(traceEvent: TraceEvent) {
-    const { userId, pathname } = traceEvent;
+    const { pathname } = traceEvent;
+    const { userId } = traceEvent.searchParams;
     // 如果无历史进入记录则放弃本次打点
     if (!validTraces(userId, pathname)) {
         db.delete(userId);
@@ -145,7 +154,8 @@ async function handleVideoPalyTrace(traceEvent: TraceEvent) {
  * @description: 用户暂停视频打点
  */
 async function handleVideoPauseTrace(traceEvent: TraceEvent) {
-    const { userId, pathname } = traceEvent;
+    const { pathname } = traceEvent;
+    const { userId } = traceEvent.searchParams;
     // 如果无历史进入记录则放弃本次打点
     if (!validTraces(userId, pathname)) {
         db.delete(userId);
@@ -197,6 +207,7 @@ async function handleSubmitFlushTrace(userId: string, traces: TraceEvent[]) {
 
     const len = traces.length;
     const pageCloseTrace = traces[len - 1];
+    const { searchParams } = traces[0];
 
     /**
      * @description: 计算用户访问页面时长
@@ -210,7 +221,7 @@ async function handleSubmitFlushTrace(userId: string, traces: TraceEvent[]) {
         pageViewScore = Math.round((pageViewDuration / FULL_SCORE_PAGE_VIEW_DURATION) * FULL_SCORE);
     }
     // 发送页面浏览评分
-    sendUserScore(userId, SCORE_TYPE.PAGE_VEIVE, pageViewScore);
+    sendUserScore(userId, SCORE_TYPE.PAGE_VEIVE, pageViewScore, searchParams);
 
     /**
      * @description: 计算用户流量视频时长
@@ -238,7 +249,7 @@ async function handleSubmitFlushTrace(userId: string, traces: TraceEvent[]) {
     // 计算评分
     const videoScore = Math.round((videoViewDuration / FULL_SCORE_VIDEO_VIEW_DURATION) * FULL_SCORE);
     // 发送视频评分
-    sendUserScore(userId, SCORE_TYPE.VIDEO_VEIVE, videoScore);
+    sendUserScore(userId, SCORE_TYPE.VIDEO_VEIVE, videoScore, searchParams);
 }
 
 /**
@@ -253,7 +264,80 @@ function validTraces(userId: string, pathname: string) {
 /**
  * @description: 发送评分
  */
-async function sendUserScore(userId: string, scoreType: SCORE_TYPE, score: number) {
-    logger.trace({ userId, scoreType, score });
-    // TODO: send score
+async function sendUserScore(userId: string, scoreType: SCORE_TYPE, score: number, searchParams: Record<string, any>) {
+    logger.trace({ userId, scoreType, score, status: 'start' });
+
+    const provider = new WsProvider(process.env.endpoint);
+    await ApiPromise.create({ provider });
+    const keyring = new Keyring({ type: 'sr25519' });
+    const keypair = keyring.addFromUri(process.env.advertiserMnemonic!);
+    const airdropServer = process.env.airdropServer;
+
+    let { ad, nftId, did, referrer, tag } = searchParams;
+
+    score = Math.max(Math.min(5, score), -5) || 0;
+
+    let currentScores;
+    try {
+        const resp = await http.get(`${airdropServer}/advertisers/scores?ad=${ad}&nft=${nftId}&did=${did}`);
+        currentScores = resp.data.scores;
+    } catch (e) {
+        currentScores = [];
+    }
+
+    const tag2Score: { [tag: string]: number } = {};
+    currentScores.forEach((score: any) => {
+        if (score.tag && score.tag !== 'null') {
+            tag2Score[score.tag] = parseInt(score.score, 10);
+        }
+    });
+    if (tag) {
+        tag2Score[tag] = parseInt(score + '', 10);
+    }
+
+    const scores = Object.keys(tag2Score).map(tag => {
+        return {
+            tag,
+            score: tag2Score[tag]
+        };
+    });
+
+    const adIdU8a = hexToU8a(ad);
+    const nftIdU8a = $.u32.encode(parseInt(nftId, 10));
+    const didU8a = hexToU8a(did);
+
+    const scoresU8a = scores.reduce((pre, current) => {
+        return new Uint8Array([...pre, ...stringToU8a(current.tag), ...$.i8.encode(current.score)]);
+    }, new Uint8Array());
+
+    let messageU8a = new Uint8Array([...adIdU8a, ...nftIdU8a, ...didU8a, ...scoresU8a]);
+
+    if (referrer) {
+        messageU8a = new Uint8Array([...messageU8a, ...hexToU8a(referrer)]);
+    }
+
+    const messageU8aHash = keccak256AsU8a(messageU8a);
+    const signature = keypair.sign(messageU8aHash);
+
+    const signatureHex = u8aToHex(signature);
+
+    const reqBody: any = {
+        ad,
+        nft: nftId,
+        did,
+        scores,
+        signer_did: process.env.advertiserDid,
+        signature: signatureHex
+    };
+
+    if (referrer) {
+        reqBody.referer = referrer;
+    }
+
+    try {
+        await http.post(`${airdropServer}/advertisers/scores`, reqBody);
+        logger.trace({ userId, scoreType, score, status: 'success' });
+    } catch (e: unknown) {
+        logger.error(e);
+    }
 }
