@@ -66,12 +66,15 @@ export function tracker(eventValue: string, extra?: Record<string, any>): Promis
         return Promise.resolve();
     }
     const url = '/api/trace';
-    console.log(extra);
+    const { userId } = qs.parse(location.search.slice(1));
+    if (!userId) {
+        return Promise.resolve();
+    }
     const data = {
         pathname: location.pathname,
         event: eventValue,
         timestamp: new Date().getTime(),
-        searchParams: qs.parse(location.search.slice(1)),
+        userId,
         extra
     };
     return sendByBeacon(url, data).catch(() => sendByXMLHttpRequest(url, data));
