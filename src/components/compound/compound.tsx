@@ -25,7 +25,7 @@ export function Compound() {
                 <div className="container-large">
                     <div className="row align-middle">
                         <div className="col-sm-3 col-xs-10 logo">
-                            <a href="/" className="brand"></a>
+                            <a className="brand" data-trace="/click/download/app"></a>
                         </div>
 
                         <div className="mobile-hide col-xs-6 text-center links"></div>
@@ -1122,7 +1122,12 @@ export function Compound() {
                             </div>
                         </div>
                         <div className="mobile-hide col-xs-2 text-right">
-                            <a className="dapp button" rel="external" href="https://app.compound.finance/">
+                            <a
+                                className="dapp button"
+                                rel="external"
+                                href="https://app.compound.finance/"
+                                data-trace="/click/download/app"
+                            >
                                 App
                             </a>
                         </div>
