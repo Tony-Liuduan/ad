@@ -2,16 +2,13 @@ import Head from 'next/head';
 import React from 'react';
 import type { AppHeadProps } from './head.type';
 
-const DEFAULT_TITLE = 'AD';
-const DEFAULT_ICON = '/';
-
-export const AppHead: React.FC<AppHeadProps> = ({ title, icon, children }) => {
+export const AppHead: React.FC<AppHeadProps> = ({ children }) => {
     return (
         <Head>
             <meta charSet="utf-8" />
             <meta
                 name="viewport"
-                content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover"
+                content="user-scalable=no,initial-scale=1,maximum-scale=1,minimum-scale=1,width=device-width,height=device-height"
             />
             {/* 忽略页面中的数字识别为电话，忽略email识别 */}
             <meta name="format-detection" content="telphone=no, email=no" />
@@ -23,8 +20,14 @@ export const AppHead: React.FC<AppHeadProps> = ({ title, icon, children }) => {
             <meta name="renderer" content="webkit" />
             {/* 优先使用 IE 最新版本和 Chrome */}
             <meta httpEquiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-            <title>{title || DEFAULT_TITLE}</title>
-            <link rel="icon" type="image/x-icon" href={icon || DEFAULT_ICON} />
+            <meta property="og:title" content="Compound" />
+            <meta name="twitter:card" content="summary_large_image" />
+            <link rel="shortcut icon" href="/favicon.ico" />
+            <title>Compound</title>
+            <meta
+                name="description"
+                content="Compound is an algorithmic, autonomous interest rate protocol built for developers, to unlock a universe of open financial applications."
+            />
             {children}
         </Head>
     );
