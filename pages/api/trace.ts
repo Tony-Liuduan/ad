@@ -229,6 +229,7 @@ async function handleSubmitFlushTrace(userId: string, traces: TraceEvent[]) {
     let videoPlayTime = 0;
     let videoTimes = [];
     let videoTotalDuration = 0;
+    let videoScore = 0;
     while (i < len - 1) {
         const { timestamp, event, extra } = traces[i];
         if (!videoTotalDuration && extra?.duration) {
@@ -249,11 +250,9 @@ async function handleSubmitFlushTrace(userId: string, traces: TraceEvent[]) {
     }
     // 计算视频浏览时长 s
     const videoViewDuration = videoTimes.reduce((sum, item) => item[1] - item[0] + sum, 0) / 1000;
-    videoTotalDuration = videoTotalDuration
-        ? Math.min(videoTotalDuration, FULL_SCORE_VIDEO_VIEW_DURATION)
-        : FULL_SCORE_VIDEO_VIEW_DURATION;
+    videoTotalDuration = videoTotalDuration || Math.max(videoViewDuration, FULL_SCORE_VIDEO_VIEW_DURATION);
     // 计算评分
-    const videoScore = Math.round((videoViewDuration / videoTotalDuration) * FULL_SCORE);
+    videoScore = Math.round((videoViewDuration / videoTotalDuration) * FULL_SCORE);
     // 发送视频评分
     sendUserScore(userId, SCORE_TYPE.VIDEO_VEIVE, videoScore, searchParams);
 }
