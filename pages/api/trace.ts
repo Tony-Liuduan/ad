@@ -38,7 +38,7 @@ const FULL_SCORE = 5;
 const DOWNDLOAD_APP_SCORE = 5;
 // 定义浏览页面满分时长 s
 const FULL_SCORE_PAGE_VIEW_DURATION = 10;
-// 定义浏览视频满分时长 s
+// 定义默认浏览视频满分时长 s
 const FULL_SCORE_VIDEO_VIEW_DURATION = 10;
 
 // FIXME: db 人数太多了内存不够用怎么办
@@ -228,8 +228,12 @@ async function handleSubmitFlushTrace(userId: string, traces: TraceEvent[]) {
     let i = 1;
     let videoPlayTime = 0;
     let videoTimes = [];
+    let videoTotalDuration = 0;
     while (i < len - 1) {
-        const { timestamp, event } = traces[i];
+        const { timestamp, event, extra } = traces[i];
+        if (!videoTotalDuration && extra?.duration) {
+            videoTotalDuration = extra?.duration;
+        }
         // 收集 play 时间
         if (event === TRACE_EVENT_TYPE.CLICK_VIDEO_PLAY) {
             videoPlayTime = timestamp;
@@ -245,8 +249,11 @@ async function handleSubmitFlushTrace(userId: string, traces: TraceEvent[]) {
     }
     // 计算视频浏览时长 s
     const videoViewDuration = videoTimes.reduce((sum, item) => item[1] - item[0] + sum, 0) / 1000;
+    videoTotalDuration = videoTotalDuration
+        ? Math.min(videoTotalDuration, FULL_SCORE_VIDEO_VIEW_DURATION)
+        : FULL_SCORE_VIDEO_VIEW_DURATION;
     // 计算评分
-    const videoScore = Math.round((videoViewDuration / FULL_SCORE_VIDEO_VIEW_DURATION) * FULL_SCORE);
+    const videoScore = Math.round((videoViewDuration / videoTotalDuration) * FULL_SCORE);
     // 发送视频评分
     sendUserScore(userId, SCORE_TYPE.VIDEO_VEIVE, videoScore, searchParams);
 }
