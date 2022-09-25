@@ -2,7 +2,7 @@ import { nextRouterHandleConfig } from '@app/middlewares/error';
 import { logger, nextLogger } from '@app/utils/logger';
 import { nextRouter } from '@app/utils/next-router';
 import { http } from '@lib/http.server';
-import { ApiPromise, Keyring, WsProvider } from '@polkadot/api';
+import { keypair$ } from '@lib/polkadot';
 import { hexToU8a, stringToU8a, u8aToHex } from '@polkadot/util';
 import { keccak256AsU8a } from '@polkadot/util-crypto';
 import findLastIndex from 'lodash/findLastIndex';
@@ -272,11 +272,7 @@ function validTraces(userId: string, pathname: string) {
 async function sendUserScore(userId: string, scoreType: SCORE_TYPE, score: number, searchParams: Record<string, any>) {
     logger.trace({ userId, scoreType, score, status: 'start' });
 
-    const provider = new WsProvider(process.env.endpoint);
-    await ApiPromise.create({ provider });
-    const keyring = new Keyring({ type: 'sr25519' });
-    const keypair = keyring.addFromUri(process.env.advertiserMnemonic!);
-    const airdropServer = process.env.airdropServer;
+    const keypair: any = await keypair$;
 
     let { ad, nftId, did, referrer, tag } = searchParams;
 
@@ -284,7 +280,7 @@ async function sendUserScore(userId: string, scoreType: SCORE_TYPE, score: numbe
 
     let currentScores;
     try {
-        const resp = await http.get(`${airdropServer}/advertisers/scores?ad=${ad}&nft=${nftId}&did=${did}`);
+        const resp = await http.get(`${process.env.airdropServer}/advertisers/scores?ad=${ad}&nft=${nftId}&did=${did}`);
         currentScores = resp.data.scores;
     } catch (e) {
         currentScores = [];
@@ -307,40 +303,40 @@ async function sendUserScore(userId: string, scoreType: SCORE_TYPE, score: numbe
         };
     });
 
-    const adIdU8a = hexToU8a(ad);
-    const nftIdU8a = $.u32.encode(parseInt(nftId, 10));
-    const didU8a = hexToU8a(did);
-
-    const scoresU8a = scores.reduce((pre, current) => {
-        return new Uint8Array([...pre, ...stringToU8a(current.tag), ...$.i8.encode(current.score)]);
-    }, new Uint8Array());
-
-    let messageU8a = new Uint8Array([...adIdU8a, ...nftIdU8a, ...didU8a, ...scoresU8a]);
-
-    if (referrer) {
-        messageU8a = new Uint8Array([...messageU8a, ...hexToU8a(referrer)]);
-    }
-
-    const messageU8aHash = keccak256AsU8a(messageU8a);
-    const signature = keypair.sign(messageU8aHash);
-
-    const signatureHex = u8aToHex(signature);
-
-    const reqBody: any = {
-        ad,
-        nft: nftId,
-        did,
-        scores,
-        signer_did: process.env.advertiserDid,
-        signature: signatureHex
-    };
-
-    if (referrer) {
-        reqBody.referer = referrer;
-    }
-
     try {
-        await http.post(`${airdropServer}/advertisers/scores`, reqBody);
+        const adIdU8a = hexToU8a(ad);
+        const nftIdU8a = $.u32.encode(parseInt(nftId, 10));
+        const didU8a = hexToU8a(did);
+
+        const scoresU8a = scores.reduce((pre, current) => {
+            return new Uint8Array([...pre, ...stringToU8a(current.tag), ...$.i8.encode(current.score)]);
+        }, new Uint8Array());
+
+        let messageU8a = new Uint8Array([...adIdU8a, ...nftIdU8a, ...didU8a, ...scoresU8a]);
+
+        if (referrer) {
+            messageU8a = new Uint8Array([...messageU8a, ...hexToU8a(referrer)]);
+        }
+
+        const messageU8aHash = keccak256AsU8a(messageU8a);
+        const signature = keypair.sign(messageU8aHash);
+
+        const signatureHex = u8aToHex(signature);
+
+        const reqBody: any = {
+            ad,
+            nft: nftId,
+            did,
+            scores,
+            signer_did: process.env.advertiserDid,
+            signature: signatureHex
+        };
+
+        if (referrer) {
+            reqBody.referer = referrer;
+        }
+
+        await http.post(`${process.env.airdropServer}/advertisers/scores`, reqBody);
         logger.trace({ userId, scoreType, score, status: 'success' });
     } catch (e: unknown) {
         logger.error(e);

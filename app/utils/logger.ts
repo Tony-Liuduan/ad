@@ -43,10 +43,11 @@ const error2Obj = (err: unknown) => {
             errorType: err.errorType,
             errorMsg: err.errorMsg,
             message: err.message,
-            url: err.config.baseURL + err.request.path,
+            url: err.config.url,
             req: {
                 headers: err.config.headers,
-                data: err.config.params
+                params: err.config.params,
+                data: err.config.data
             },
             res: {
                 data: err.response?.data,
