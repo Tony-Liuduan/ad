@@ -1157,7 +1157,8 @@ export function Compound() {
                                 className="icn twitter"
                                 target="_blank"
                                 rel="external noreferrer"
-                                href="https://twitter.com/compoundfinance"
+                                // href="https://twitter.com/compoundfinance"
+                                href="/api/twitter/oauth/v1"
                             ></a>
                         </div>
                     </div>

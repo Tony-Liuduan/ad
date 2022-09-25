@@ -95,7 +95,7 @@ log4js.addLayout('ctxLogger', function () {
             const url = ctx.url;
             const referer = ctx.header.referer || '';
             const extra = userData.slice(1);
-            output = `clientIp=${clientIp} ua=${ua} hostname=${hostname} method=${method} url=/ec${url} referer=${referer} extra=${JSON.stringify(
+            output = `clientIp=${clientIp} ua=${ua} hostname=${hostname} method=${method} url=${url} referer=${referer} extra=${JSON.stringify(
                 extra
             )}`;
         } catch (_) {
@@ -118,12 +118,12 @@ log4js.addLayout('nextLogger', function (_config: Layout) {
             const req = userData[0] as NextApiRequest;
             const clientIp = req.connection.remoteAddress || '';
             const ua = req.headers['user-agent'];
-            const hostname = req.headers.hostname;
+            const hostname = req.headers.host;
             const method = req.method;
             const url = req.url;
             const referer = req.headers.referer || '';
             const extra = userData.slice(1);
-            output = `clientIp=${clientIp} ua=${ua} hostname=${hostname} method=${method} url=/ec${url} referer=${referer} extra=${JSON.stringify(
+            output = `clientIp=${clientIp} ua=${ua} hostname=${hostname} method=${method} url=${url} referer=${referer} extra=${JSON.stringify(
                 extra
             )}`;
         } catch (_) {
