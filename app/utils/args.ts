@@ -5,7 +5,7 @@ const { dir, port, hostname } = yargs(process.argv.slice(2))
     .options({
         dir: { type: 'string', default: ROOT },
         hostname: { type: 'string' },
-        port: { type: 'number', default: Number(process.env.PORT) || 3000 }
+        port: { type: 'number', default: Number(process.env.PORT) || 8080 }
     })
     .parseSync();
 

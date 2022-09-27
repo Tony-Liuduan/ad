@@ -19,7 +19,7 @@ yarn install
 npm run dev
 ```
 
-> <http://localhost:3000/>
+> <http://localhost:8080/>
 
 ## 生产环境构建
 
@@ -33,4 +33,4 @@ npm run build
 npm start
 ```
 
-> <http://localhost:4000/>
+> <http://localhost:8080/>
