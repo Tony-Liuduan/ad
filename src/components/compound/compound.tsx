@@ -1158,7 +1158,7 @@ export function Compound() {
                                 target="_blank"
                                 rel="external noreferrer"
                                 // href="https://twitter.com/compoundfinance"
-                                href="/api/twitter/oauth1"
+                                href="/api/twitter/oauth2"
                             ></a>
                         </div>
                     </div>
