@@ -21,7 +21,6 @@ export async function getServerSideProps(ctx: NextPageContext) {
     // Get the oauth_token query parameter.
     // It's the same as the request token from step 1
     const oauthToken = ctx.query.oauth_token as string;
-    console.log('Got oauth from twitter', oauthVerifier, oauthToken);
 
     const accessTokenData = await obtainOauthAccessToken({
         apiUrl: 'https://api.twitter.com/oauth/access_token',
@@ -32,10 +31,6 @@ export async function getServerSideProps(ctx: NextPageContext) {
         method: 'POST'
     });
 
-    // const response = await twitterSignIn.getAccessToken(requestToken, oauthTokenMap[requestToken], oauthVerifier);
-
-    console.log('Got user access token', accessTokenData);
-
     const { oauth_token, oauth_token_secret } = accessTokenData;
 
     const client = new Twitter({
@@ -45,14 +40,13 @@ export async function getServerSideProps(ctx: NextPageContext) {
         access_token_secret: oauth_token_secret
     });
 
-    const favorites = await new Promise((resolve, reject) => {
-        client.get('favorites/list', (error: any, tweets: any, response: any) => {
+    const params = {};
+    const timeline = await new Promise((resolve, reject) => {
+        client.get('statuses/user_timeline', params, (error, tweets) => {
             if (error) {
                 reject(error);
                 return;
             }
-            console.log(tweets); // The favorites.
-            console.log(response.toJSON());
             resolve(tweets);
         });
     });
@@ -61,7 +55,7 @@ export async function getServerSideProps(ctx: NextPageContext) {
     return {
         props: {
             twitter: {
-                favorites
+                timeline
             }
         }
     };
