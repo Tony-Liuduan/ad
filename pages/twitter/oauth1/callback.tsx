@@ -1,6 +1,9 @@
 import { obtainOauthAccessToken } from '@lib/twitter/oauth1';
+import config from 'config';
 import type { NextPageContext } from 'next';
 import Twitter from 'twitter';
+
+const twitterConfig = config.get<any>('twitter');
 
 export default function TwitterOauth1CallbackPage({
     twitter
@@ -24,8 +27,8 @@ export async function getServerSideProps(ctx: NextPageContext) {
 
     const accessTokenData = await obtainOauthAccessToken({
         apiUrl: 'https://api.twitter.com/oauth/access_token',
-        consumerKey: process.env.TWITTER_CONSUMER_KEY!,
-        consumerSecret: process.env.TWITTER_CONSUMER_SECRET!,
+        consumerKey: twitterConfig.TWITTER_CONSUMER_KEY!,
+        consumerSecret: twitterConfig.TWITTER_CONSUMER_SECRET!,
         oauthToken,
         oauthVerifier,
         method: 'POST'
@@ -34,8 +37,8 @@ export async function getServerSideProps(ctx: NextPageContext) {
     const { oauth_token, oauth_token_secret } = accessTokenData;
 
     const client = new Twitter({
-        consumer_key: process.env.TWITTER_CONSUMER_KEY!,
-        consumer_secret: process.env.TWITTER_CONSUMER_SECRET!,
+        consumer_key: twitterConfig.TWITTER_CONSUMER_KEY!,
+        consumer_secret: twitterConfig.TWITTER_CONSUMER_SECRET!,
         access_token_key: oauth_token,
         access_token_secret: oauth_token_secret
     });

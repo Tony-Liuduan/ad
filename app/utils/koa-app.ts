@@ -1,18 +1,20 @@
+import config from 'config';
 import Koa from 'koa';
 import type { RequestHandler } from 'next/dist/server/next';
 import Client, { auth } from 'twitter-api-sdk';
-import config from '../../config.json';
 import { middlewareCors } from '../middlewares/cors';
 import { middlewareError, onError, watchNodeGlobalError } from '../middlewares/error';
 import { middlewarePerformance } from '../middlewares/performance';
 
+const twitterConfig = config.get<any>('twitter');
+const oauth2Client = new auth.OAuth2User({
+    client_id: twitterConfig.CLIENT_ID,
+    client_secret: twitterConfig.CLIENT_SECRET,
+    callback: twitterConfig.CALLBACK2,
+    scopes: ['tweet.read', 'users.read']
+});
+
 export function createKoaApp(requestHandler: RequestHandler) {
-    const oauth2Client = new auth.OAuth2User({
-        client_id: config.twitter.CLIENT_ID,
-        client_secret: config.twitter.CLIENT_SECRET,
-        callback: config.twitter.CALLBACK2,
-        scopes: ['tweet.read', 'users.read']
-    });
     watchNodeGlobalError();
     const app = new Koa();
     // 表示是否开启代理信任开关，默认为false，如果开启代理信任，对于获取request请求中的 host，protocol，ip分别优先从Header字段中的X-Forwarded-Host，X-Forwarded-Proto，X-Forwarded-For获取

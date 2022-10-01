@@ -5,6 +5,7 @@ import { http } from '@lib/http.server';
 import { keypair$ } from '@lib/polkadot';
 import { hexToU8a, stringToU8a, u8aToHex } from '@polkadot/util';
 import { keccak256AsU8a } from '@polkadot/util-crypto';
+import config from 'config';
 import findLastIndex from 'lodash/findLastIndex';
 import groupBy from 'lodash/groupBy';
 import * as $ from 'parity-scale-codec';
@@ -60,6 +61,8 @@ export default nextRouter
         await next();
     })
     .post(async (req, res) => {
+        res.status(200);
+        res.end();
         const body = JSON.parse(req.body);
         nextLogger.trace(req, body);
         switch (body.event) {
@@ -79,8 +82,6 @@ export default nextRouter
                 handleVideoPauseTrace(body);
                 break;
         }
-        res.status(200);
-        res.end();
     })
     .handler(nextRouterHandleConfig);
 
@@ -280,7 +281,9 @@ async function sendUserScore(userId: string, scoreType: SCORE_TYPE, score: numbe
 
     let currentScores;
     try {
-        const resp = await http.get(`${process.env.airdropServer}/advertisers/scores?ad=${ad}&nft=${nftId}&did=${did}`);
+        const resp = await http.get(
+            `${config.get<string>('airdropServer')}/advertisers/scores?ad=${ad}&nft=${nftId}&did=${did}`
+        );
         currentScores = resp.data.scores;
     } catch (e) {
         currentScores = [];
@@ -328,7 +331,7 @@ async function sendUserScore(userId: string, scoreType: SCORE_TYPE, score: numbe
             nft: nftId,
             did,
             scores,
-            signer_did: process.env.advertiserDid,
+            signer_did: config.get('advertiserDid'),
             signature: signatureHex
         };
 
@@ -336,7 +339,7 @@ async function sendUserScore(userId: string, scoreType: SCORE_TYPE, score: numbe
             reqBody.referer = referrer;
         }
 
-        await http.post(`${process.env.airdropServer}/advertisers/scores`, reqBody);
+        await http.post(`${config.get<string>('airdropServer')}/advertisers/scores`, reqBody);
         logger.trace({ userId, scoreType, score, status: 'success' });
     } catch (e: unknown) {
         logger.error(e);
