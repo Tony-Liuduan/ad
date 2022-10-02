@@ -11,7 +11,26 @@ const oauth2Client = new auth.OAuth2User({
     client_id: twitterConfig.CLIENT_ID,
     client_secret: twitterConfig.CLIENT_SECRET,
     callback: twitterConfig.CALLBACK2,
-    scopes: ['tweet.read', 'users.read']
+    scopes: [
+        'tweet.read',
+        'tweet.write',
+        'tweet.moderate.write',
+        'users.read',
+        'follows.read',
+        'follows.write',
+        'offline.access',
+        'space.read',
+        'mute.read',
+        'mute.write',
+        'like.read',
+        'like.write',
+        'list.read',
+        'list.write',
+        'block.read',
+        'block.write',
+        'bookmark.read',
+        'bookmark.write'
+    ]
 });
 
 export function createKoaApp(requestHandler: RequestHandler) {
@@ -36,8 +55,34 @@ export function createKoaApp(requestHandler: RequestHandler) {
             const { code } = ctx.query;
             await oauth2Client.requestAccessToken(code as string);
             const client = new Client(oauth2Client);
-            const myUser = await client.users.findMyUser();
-            ctx.body = myUser;
+            const myUser: any = await client.users.findMyUser();
+            const userId = myUser.data.id; // 1574050891262353408
+            // 查询：获取当前用户关注的人列表，目标 id：292132128
+            const following = await client.users.usersIdFollowing(userId);
+            // 查询：获取关注当前用户的人列表
+            // const followers = await client.users.usersIdFollowers(userId);
+            // 查询：用户喜欢的推文列表，目标推文 id：1449148429058260992
+            const lickedTweets = await client.tweets.usersIdLikedTweets(userId);
+            // 查询：用户转发、评论列表
+            // 转发："text": "RT @jack: just setting up my twttr"
+            // 评论："text": "@compoundfinance test"
+            const usersIdTweets = await client.tweets.usersIdTweets(userId);
+            // 执行：转发某条推特
+            // const usersIdRetweets = await client.tweets.usersIdRetweets(userId, { tweet_id: '20' });
+
+            console.log('following', JSON.stringify(following, null, 2));
+            console.log('lickedTweets', JSON.stringify(lickedTweets, null, 2));
+            console.log('usersIdTweets', JSON.stringify(usersIdTweets, null, 2));
+            // console.log('usersIdRetweets', JSON.stringify(usersIdRetweets, null, 2));
+
+            ctx.body = {
+                myUser,
+                following,
+                lickedTweets,
+                usersIdTweets
+                // usersIdRetweets
+            };
+
             return;
         }
         await next();

@@ -1,6 +1,5 @@
 import { args, devArags } from '@app/utils/args';
 import { createKoaApp } from '@app/utils/koa-app';
-import { execSync } from 'child_process';
 import fs from 'fs';
 import http from 'http';
 import next from 'next';
@@ -69,7 +68,7 @@ export async function main() {
         await app.prepare();
 
         // 开发模式下自动打开浏览器
-        execSync(`open ${appUrl}`);
+        // execSync(`open ${appUrl}`);
     } catch (err: unknown) {
         if (err && typeof err === 'object' && (err as { code?: string }).code === 'EADDRINUSE') {
             const errorMessage = `Port ${port} is already in use.`;

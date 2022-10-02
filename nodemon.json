@@ -1,0 +1,6 @@
+{
+    "watch": ["app"],
+    "ext": "ts,json",
+    "ignore": ["**/*.spec.ts"],
+    "exec": "NODE_ENV=development APP_ENV=development ts-node -r tsconfig-paths/register --project tsconfig.server.dev.json bin/app.dev.ts --port 8080"
+}
